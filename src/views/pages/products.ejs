@@ -1,0 +1,151 @@
+<style>
+    .card:hover {
+      transform: scale(1.05);
+      transition: transform 0.3s ease;
+    }
+  
+    .filter-sidebar {
+      float: left;
+      width: 25%;
+      padding-right: 15px;
+    }
+  
+    .product-list {
+      float: right;
+      width: 75%;
+    }
+  
+    .product-card {
+      height: 100%;
+    }
+  
+    .product-image {
+      height: 200px;
+      object-fit: cover;
+    }
+  </style>
+  
+  <div class="container">
+    <div class="filter-sidebar">
+      <div class="card" style="transform: scale(1)">
+        <div class="card-header">
+          Filters
+        </div>
+        <div class="card-body">
+          <h5>Category</h5>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" value="kids" id="categoryKids">
+            <label class="form-check-label" for="categoryKids">
+              Kids
+            </label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" value="women" id="categoryWomen">
+            <label class="form-check-label" for="categoryWomen">
+              Women
+            </label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" value="men" id="categoryMen">
+            <label class="form-check-label" for="categoryMen">
+              Men
+            </label>
+          </div>
+          <h5 class="mt-3">Price Range</h5>
+          <div class="mb-3">
+            <label for="minPrice" class="form-label">Min Price</label>
+            <input type="number" class="form-control" id="minPrice" min="0" step="0.01">
+          </div>
+          <div class="mb-3">
+            <label for="maxPrice" class="form-label">Max Price</label>
+            <input type="number" class="form-control" id="maxPrice" min="0" step="0.01">
+          </div>
+          <button type="button" class="btn btn-custom align-self-end my-2 text-light" onclick="resetFilters()">Reset
+            Filters</button>
+          <button type="button" class="btn btn-custom align-self-end my-2 text-light" onclick="applyFilters()">Apply
+            Filters</button>
+        </div>
+      </div>
+    </div>
+  
+    <div class="product-list">
+      <div id="productList" class="row row-cols-1 row-cols-md-4 g-4"></div>
+    </div>
+  </div>
+  
+  
+  <script>
+    const productList = document.getElementById('productList');
+    let productsData = [];
+  
+    fetch('/api/products')
+      .then(response => response.json())
+      .then(products => {
+        productsData = products;
+        renderProducts(products)
+      }).catch(error => console.error(error));
+  
+    function renderProducts(products) {
+      if (products.length === 0) {
+        productList.innerHTML = '<h3>No product found</h3>';
+        return;
+      }
+      productList.innerHTML = '';
+      products.forEach(product => {
+        const productCard = `
+          <div class="col-6 col-md-3 mb-4">
+            <div class="card product-card h-100">
+              <img src="${product.imageUrl}" class="card-img-top img-fluid product-image" alt="${product.name}">
+              <div class="card-body">
+                <div>
+                  <h5 class="card-title">${product.name}</h5>
+                  <p class="card-text">${product.description}</p>
+                  <p class="card-text font-weight-bold">Price: $${product.price}</p>
+                </div>
+                <button class="btn btn-custom align-self-end" onclick="#" >Add to Cart</button>
+              </div>
+            </div>
+          </div>`;
+        productList.insertAdjacentHTML('beforeend', productCard);
+      });
+    }
+  
+    function applyFilters() {
+      const categoryKids = document.getElementById('categoryKids').checked;
+      const categoryWomen = document.getElementById('categoryWomen').checked;
+      const categoryMen = document.getElementById('categoryMen').checked;
+      const minPrice = parseFloat(document.getElementById('minPrice').value);
+      const maxPrice = parseFloat(document.getElementById('maxPrice').value);
+  
+      const filteredProducts = productsData.filter(product => {
+        const categoryMatch = (
+          (!categoryKids && !categoryWomen && !categoryMen) || // No category selected
+          (categoryKids && product.category === 'KIDS') ||
+          (categoryWomen && product.category === 'WOMEN') ||
+          (categoryMen && product.category === 'MEN')
+        );
+  
+        const priceMatch = (
+          (!minPrice && !maxPrice) || // No price range selected
+          (!minPrice || product.price >= minPrice) &&
+          (!maxPrice || product.price <= maxPrice)
+        );
+  
+        return categoryMatch && priceMatch;
+      });
+  
+      renderProducts(filteredProducts);
+    }
+  
+    function resetFilters() {
+      document.getElementById('categoryKids').checked = false;
+      document.getElementById('categoryWomen').checked = false;
+      document.getElementById('categoryMen').checked = false;
+  
+      document.getElementById('minPrice').value = '';
+      document.getElementById('maxPrice').value = '';
+  
+      renderProducts(productsData);
+    }
+
+  </script>
