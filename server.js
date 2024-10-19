@@ -4,7 +4,10 @@ const expressLayouts = require('express-ejs-layouts');
 const bodyParser = require('body-parser');
 require('dotenv').config();
 const path = require('path');
+const cookieParser = require('cookie-parser');
+const morgan = require(`morgan`);
 
+const userRoutes = require('./src/api/routers/user');
 const productRoutes = require('./src/api/routers/products');
 const pageRoutes = require('./src/api/routers/pages');
 
@@ -24,8 +27,13 @@ app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
 
 app.use(bodyParser.json({ limit: '10mb' }));
 
+app.use(morgan('dev'));
+
+app.use(cookieParser());
+
 app.use('/', pageRoutes);
 app.use('/api', productRoutes);
+app.use('/user', userRoutes);
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);

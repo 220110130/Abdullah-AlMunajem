@@ -1,0 +1,128 @@
+<div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-4">
+        <div class="card rounded-3"
+          style="max-width: 350px;">
+          <div class="card-header bg-warning text-white">
+            <h4>Sign Up</h4>
+          </div>
+          <div class="card-body">
+            <form id="signupForm">
+              <div class="mb-3">
+                <label for="name" class="form-label">Name</label>
+                <input type="text" class="form-control form-control-sm" id="name" name="name"
+                  placeholder="Enter your name" required>
+              </div>
+              <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" class="form-control form-control-sm" id="email" name="email"
+                  placeholder="Enter your email" required>
+              </div>
+              <div class="mb-3">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" class="form-control form-control-sm" id="password" name="password"
+                  placeholder="Enter your password" required>
+              </div>
+              <div class="mb-3">
+                <label for="imageUpload" class="form-label">Image Upload</label>
+                <input type="file" class="form-control form-control-sm" id="imageUpload" accept="image/*" required>
+              </div>
+              <div class="mb-3">
+                <label for="role" class="form-label">Role</label>
+                <select class="form-select form-control-sm" id="role" name="role" required>
+                  <option value="">Select a role</option>
+                  <option value="customer">Customer</option>
+                  <option value="vendor">Vendor</option>
+                </select>
+              </div>
+              <div id="vendorFields" class="mb-3" style="display: none;">
+                <div class="mb-3">
+                  <label for="brandName" class="form-label">Store Name</label>
+                  <input type="text" class="form-control form-control-sm" id="brandName" name="brandName"
+                    placeholder="Enter your store name">
+                </div>
+                <div class="mb-3">
+                  <label for="storeDescription" class="form-label">Store Description</label>
+                  <textarea class="form-control form-control-sm" id="storeDescription" name="storeDescription"
+                    placeholder="Enter your store description"></textarea>
+                </div>
+              </div>
+              <button type="submit" class="btn btn-custom">Sign Up</button>
+            </form>
+            <p class="mt-2">Already registered? Signin <a href="/login">here.</a></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    const roleSelect = document.getElementById('role');
+    const vendorFields = document.getElementById('vendorFields');
+  
+    roleSelect.addEventListener('change', function () {
+      if (this.value === 'vendor') {
+        vendorFields.style.display = 'block';
+      } else {
+        vendorFields.style.display = 'none';
+      }
+    });
+  
+    const signupForm = document.getElementById('signupForm');
+  
+    signupForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+  
+      const formData = new FormData(signupForm);
+      const data = Object.fromEntries(formData);
+  
+      // Read the selected image file as Base64
+      const imageFile = document.getElementById('imageUpload').files[0];
+      const base64Image = await convertImageToBase64(imageFile);
+  
+      // Append the Base64 image data to the form data
+      data.profilePic = base64Image;
+  
+      try {
+        const response = await fetch('/user/signup', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(data)
+        });
+  
+        if (response.ok) {
+          window.location.href = '/login';
+        } else {
+          console.error('Signup failed');
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    });
+  
+    function convertImageToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.drawImage(img, 0, 0);
+  
+            const mimeType = file.type || 'image/jpeg';
+            const base64Data = canvas.toDataURL(mimeType);
+            resolve(base64Data);
+          };
+          img.onerror = reject;
+          img.src = event.target.result;
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+  </script>

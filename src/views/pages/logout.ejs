@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Logout</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+
+<body>
+  <div class="container mt-5">
+    <div class="alert alert-success" role="alert">
+      <h4 class="alert-heading">You are logged out!</h4>
+      <p>Thank you for visiting us!</p>
+      <hr>
+      <p class="mb-0">You can <a href="/login" class="alert-link">login again</a> if you want.</p>
+    </div>
+  </div>
+  <script>
+    // Remove cookie
+    document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+
+    // Clear local storage
+    localStorage.clear();
+
+    setTimeout(function () {
+      window.location.href = '/login';
+    }, 2000); // Redirect after 2 seconds
+  </script>
+</body>
+
+</html>
