@@ -102,7 +102,7 @@
                   <p class="card-text">${product.description}</p>
                   <p class="card-text font-weight-bold">Price: $${product.price}</p>
                 </div>
-                <button class="btn btn-custom align-self-end" onclick="#" >Add to Cart</button>
+                <button class="btn btn-custom align-self-end" onclick="addToCart('${product._id}')">Add to Cart</button>
               </div>
             </div>
           </div>`;
@@ -147,5 +147,41 @@
   
       renderProducts(productsData);
     }
+
+  function addToCart(productId) {
+    function getCookie(name) {
+      const cookieString = document.cookie;
+      const cookies = cookieString.split(';').map(cookie => cookie.trim());
+      for (const cookie of cookies) {
+        const [cookieName, cookieValue] = cookie.split('=');
+        if (cookieName === name) {
+          return decodeURIComponent(cookieValue);
+        }
+      }
+      return null;
+    }
+
+    const token = getCookie('token');
+    fetch('/api/cart/add', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ productId })
+    })
+      .then(response => {
+        if (response.ok) {
+          window.alert('Product added to cart successfully!');
+        } else if (response.status === 401) {
+          window.location.href = '/login';
+        } else {
+          throw new Error('Failed to add product to cart');
+        }
+      })
+      .catch(error => {
+        console.error(error);
+      });
+  }
 
   </script>

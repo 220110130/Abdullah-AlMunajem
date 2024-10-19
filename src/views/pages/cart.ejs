@@ -1,0 +1,142 @@
+<style>
+    .card {
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      transition: box-shadow 0.3s ease;
+    }
+  
+    .cart-item img {
+      width: 100px;
+      height: 100px;
+      margin-right: 10px;
+      object-fit: cover;
+    }
+  
+    .cart-item:hover {
+      transform: scale(1.05);
+      transition: transform 0.3s ease;
+    }
+  
+    .quantity-control {
+      display: flex;
+      align-items: center;
+    }
+  
+    .quantity-input {
+      width: 60px;
+      text-align: center;
+    }
+  
+    .quantity-btn {
+      width: 30px;
+      height: 30px;
+      font-size: 1rem;
+      margin: 0 5px;
+    }
+  
+    @media (max-width: 768px) {
+      .quantity-control {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+  
+      .quantity-input {
+        margin-top: 5px;
+      }
+  
+      .quantity-btn {
+        margin: 5px 0;
+      }
+    }
+  </style>
+  
+  <div class="">
+    <h1 class="mb-4">My Cart</h1>
+    <div id="cartItems" class="row">
+    </div>
+  </div>
+  <a href="/checkout" class="btn btn-custom" id="checkoutLink" style="display: none;">Proceed to Checkout</a>
+  
+  <script>
+    const cartItemsContainer = document.getElementById('cartItems');
+  
+    const checkoutLink = document.getElementById('checkoutLink');
+  
+    const cartItems = cartItemsContainer.getElementsByClassName('cart-item');
+  
+    // Function to fetch cart items and update the view
+    function fetchAndRenderCartItems() {
+      fetch('/api/cart/view')
+        .then(response => response.json())
+        .then(cartItems => {
+          cartItemsContainer.innerHTML = '';
+          cartItems.cartItems.forEach(cartItem => {
+            const cartItemElement = `
+              <div class="col-lg-4 col-md-6 col-sm-12 mb-4 cart-item">
+                <div class="card">
+                  <div class="row g-0 align-items-center">
+                    <div class="col-md-4">
+                      <img src="${cartItem.productId.imageUrl}" class="img-fluid" alt="${cartItem.productId.name}">
+                    </div>
+                    <div class="col-md-8">
+                      <div class="card-body">
+                        <h5 class="card-title">${cartItem.productId.name} </h5>
+                        <p class="card-text">Quantity: ${cartItem.quantity}</p>
+                        <p class="card-text font-weight-bold">Price: $${cartItem.productId.price * cartItem.quantity}</p>
+                      </div>
+                    </div>
+                    <div class="col-md-12 mt-3">
+                      <div class="quantity-control">
+                        <button class="btn btn-secondary quantity-btn" onclick="updateQuantity('${cartItem._id}', ${cartItem.quantity - 1})">-</button>
+                        <input type="number" class="form-control quantity-input" id="quantity-${cartItem._id}" value="${cartItem.quantity}" min="1" onchange="updateQuantity('${cartItem._id}', this.value)">
+                        <button class="btn btn-secondary quantity-btn" onclick="updateQuantity('${cartItem._id}', ${cartItem.quantity + 1})">+</button>
+                        <button class="btn btn-danger" onclick="deleteCartItem('${cartItem._id}')">Delete</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>`;
+            cartItemsContainer.insertAdjacentHTML('beforeend', cartItemElement);
+          });
+  
+          // Check if there are any cart items present
+          if (cartItems.cartItems.length === 0) {
+            cartItemsContainer.innerHTML = '<h3> Your cart is empty </h3>';
+            checkoutLink.style.display = 'none'; // Hide the "Proceed to Checkout" button
+          } else {
+            checkoutLink.style.display = 'block'; // Show the "Proceed to Checkout" button 
+          }
+  
+        })
+        .catch(error => console.error(error));
+    }
+  
+    // Initial fetch and render of cart items
+    fetchAndRenderCartItems();
+  
+    function deleteCartItem(cartItemId) {
+      fetch(`/api/cart/${cartItemId}`, { method: 'DELETE' })
+        .then(() => {
+          fetchAndRenderCartItems();
+        })
+        .catch(error => console.error(error));
+    }
+  
+    function updateQuantity(productId, newQuantity) {
+      if (newQuantity < 1) {
+        newQuantity = 1; // Ensure quantity doesn't go below 1
+      }
+      fetch(`/api/cart/${productId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ quantity: newQuantity })
+      })
+        .then(() => {
+          fetchAndRenderCartItems(); // Fetch and render updated cart items
+        })
+        .catch(error => console.error(error));
+    }
+  </script>

@@ -15,7 +15,17 @@
                 <li class="nav-item">
                     <a class="nav-link text-dark" href="/signup">Signup</a>
                 </li>
-                <% } else if (isLoggedIn) { %>
+                <% } else if (isLoggedIn && role==='customer' || role==='' ) { %>
+                    <li class="nav-item">
+                        <a class="nav-link text-dark" href="/">Products</a>
+                      </li>
+                      <li class="nav-item">
+                        <a class="nav-link text-dark" href="/my-cart">Cart</a>
+                      </li>
+                      <li class="nav-item">
+                        <a class="nav-link text-dark" href="/logout">Logout</a>
+                      </li>
+                <% } else if (isLoggedIn && role==='vendor' ) { %>
                     <li class="nav-item">
                         <a class="nav-link text-dark" href="/">Products</a>
                       </li>

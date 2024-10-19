@@ -21,3 +21,7 @@ exports.renderLoginPage = (req, res) => {
 exports.renderLogout = (req, res) => {
   res.render('pages/logout', { isLoggedIn: false });
 };
+
+exports.renderCart = (req, res) => {
+  res.render('pages/cart', { isLoggedIn: true, role: 'customer' });
+};

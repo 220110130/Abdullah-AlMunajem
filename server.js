@@ -10,6 +10,7 @@ const morgan = require(`morgan`);
 const userRoutes = require('./src/api/routers/user');
 const productRoutes = require('./src/api/routers/products');
 const pageRoutes = require('./src/api/routers/pages');
+const cartRoutes = require('./src/api/routers/cart')
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -34,6 +35,7 @@ app.use(cookieParser());
 app.use('/', pageRoutes);
 app.use('/api', productRoutes);
 app.use('/user', userRoutes);
+app.use('/api/cart', cartRoutes)
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
