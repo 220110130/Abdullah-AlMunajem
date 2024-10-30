@@ -25,3 +25,15 @@ exports.renderLogout = (req, res) => {
 exports.renderCart = (req, res) => {
   res.render('pages/cart', { isLoggedIn: true, role: 'customer' });
 };
+
+exports.renderVendorDashboard = (req, res) => {
+  res.render('pages/vendor-dashboard', { isLoggedIn: true, role: 'vendor' });
+};
+
+exports.renderAddProducts = (req, res) => {
+  res.render('pages/add-product', { isLoggedIn: true, role: 'vendor' });
+};
+
+exports.renderUpdateProduct = (req, res) => {
+  res.render('pages/update-product', { isLoggedIn: true, role: 'vendor' });
+};

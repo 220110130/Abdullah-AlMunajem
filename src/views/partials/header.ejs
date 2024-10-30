@@ -1,8 +1,11 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-light">
     <div class="container">
-      
-        <a class="navbar-brand text-dark" href="/" style="opacity: 0.7;">ShoeHub</a>
-      
+        <% if (isLoggedIn && role==='vendor') { %>
+            <a class="navbar-brand text-dark" href="/vendor-dashboard" style="opacity: 0.7;">ShoeHub</a>
+        <% } else { %>
+            <a class="navbar-brand text-dark" href="/" style="opacity: 0.7;">ShoeHub</a>
+        <% } %>
+
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
                 <% if (!isLoggedIn) { %>
@@ -27,7 +30,10 @@
                       </li>
                 <% } else if (isLoggedIn && role==='vendor' ) { %>
                     <li class="nav-item">
-                        <a class="nav-link text-dark" href="/">Products</a>
+                        <a class="nav-link text-dark" href="/vendor-dashboard">Dashboard</a>
+                      </li>
+                      <li class="nav-item">
+                        <a class="nav-link text-dark" href="/add-product">Add Product</a>
                       </li>
                       <li class="nav-item">
                         <a class="nav-link text-dark" href="/logout">Logout</a>

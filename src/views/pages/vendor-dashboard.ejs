@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>All Products</title>
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    .product-card {
+      margin-bottom: 20px;
+    }
+
+    .product-card:hover {
+      transform: scale(1.05);
+      transition: transform 0.3s ease;
+    }
+
+    .product-card img {
+      height: 100px;
+      width: 100px;
+      object-fit: cover;
+    }
+
+    .product-card .btn-details,
+    .product-card .btn-update {
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    .product-card .btn-update {
+      background-color: #FFA500;
+      border-color: #FFA500;
+      color: white;
+    }
+
+    .btn-delete {
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    .product-card .btn-details:hover {
+      background-color: #fdd36a;
+      border-color: #fdd36a;
+    }
+
+    .product-card .btn-update:hover {
+      background-color: #FF8C00;
+      border-color: #FF8C00;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="mainDiv" class="container">
+    <h2 class="mb-3">Your Products</h2>
+    <div id="productList" class="row"></div>
+  </div>
+
+  <script>
+    const productList = document.getElementById('productList');
+    fetchVendorsProducts();
+    function fetchVendorsProducts() {
+      fetch('/api/products/vendor', {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    })
+      .then(response => response.json())
+      .then(products => {
+        if (products.length === 0) {
+          const mainDiv = document.getElementById('mainDiv');
+          mainDiv.innerHTML = '<h3>No product found add product to show here</h3>';
+          return;
+        }
+        products.forEach(product => {
+          const productCard = `
+          <div class="col-md-4">
+            <div class="card product-card">
+              <img src="${product.imageUrl}" class="card-img-top" alt="${product.name}">
+              <div class="card-body">
+                <h5 class="card-title">${product.name}</h5>
+                <p class="card-text">${product.description}</p>
+                <p class="card-text font-weight-bold">Price: $${product.price}</p>
+                <button class="btn btn-primary btn-update" onclick="openProductUpdate('${product._id}')">Edit Product</button>
+                <button class="btn btn-danger btn-delete" onclick="deleteProduct('${product._id}')">Delete</button>
+              </div>
+            </div>
+          </div>
+        `;
+          productList.insertAdjacentHTML('beforeend', productCard);
+        });
+      })
+      .catch(error => console.error(error)); 
+    }
+    
+    function openProductDetail(productId) {
+      window.location.href = `/product/${productId}`;
+    }
+    
+    function openProductUpdate(productId) {
+      window.location.href = `/update-product/${productId}`;
+    }
+
+    function deleteProduct(productId) {
+    fetch(`/api/products/${productId}`, { method: 'DELETE' })
+      .then(() => {
+        alert('Product deleted successfully');
+        window.location.reload();
+      })
+      .catch(error => console.error(error));
+    }
+  </script>
+</body>
+
+</html>
