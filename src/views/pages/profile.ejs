@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>User Profile</title>
+  <link rel="stylesheet" href="/css/bootstrap.min.css" />
+  <style>
+    .avatar {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .loading-indicator {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: rgba(0, 0, 0, 0.7);
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 4px;
+      z-index: 9999;
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="loadingIndicator" class="loading-indicator">Loading...</div>
+
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-8">
+        <div class="card bg-warning">
+          <div class="card-body text-center">
+            <img id="avatarImg" src="https://via.placeholder.com/150" alt="User Avatar" class="avatar mb-3" />
+            <h3 id="userName">Loading...</h3>
+            <p id="userEmail">Loading...</p>
+            <input type="file" id="avatarInput" accept="image/*" style="display:none" />
+            <button class="btn" style="background-color: #fff; color: #000;" onclick="document.getElementById('avatarInput').click()">
+              Upload Profile Picture
+            </button>
+            <button class="btn" style="background-color: #fff; color: #000;" data-bs-toggle="modal" data-bs-target="#updateProfileModal">
+              Update Profile
+            </button>
+          </div>
+        </div>
+        <div class="row mt-4">
+          <div class="col-md-4">
+            <a href="/view-orders" style="text-decoration: none;">
+              <div class="card bg-info">
+                <div class="card-body">
+                  <h5 class="card-title">Pending Orders</h5>
+                  <p class="card-text" id="pendingOrders">-</p>
+                </div>
+              </div>
+            </a>
+          </div>
+          <div class="col-md-4">
+            <a href="/view-orders" style="text-decoration: none;">
+              <div class="card bg-success">
+                <div class="card-body">
+                  <h5 class="card-title">Delivered Orders</h5>
+                  <p class="card-text" id="deliveredOrders">-</p>
+                </div>
+              </div>
+            </a>
+          </div>
+          <div class="col-md-4">
+            <a href="/view-orders" style="text-decoration: none;">
+              <div class="card bg-danger">
+                <div class="card-body">
+                  <h5 class="card-title">Canceled Orders</h5>
+                  <p class="card-text" id="canceledOrders">-</p>
+                </div>
+              </div>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Update Profile Modal -->
+  <div class="modal fade" id="updateProfileModal" tabindex="-1" aria-labelledby="updateProfileModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header bg-warning text-white">
+          <h5 class="modal-title" id="updateProfileModalLabel">Update Profile</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="updateProfileForm">
+            <div class="mb-3">
+              <label for="nameInput" class="form-label">Name</label>
+              <input type="text" class="form-control" id="nameInput" placeholder="Enter your name" />
+            </div>
+            <div class="mb-3">
+              <label for="emailInput" class="form-label">Email</label>
+              <input type="email" class="form-control" id="emailInput" placeholder="Enter your email" />
+            </div>
+            <div class="mb-3">
+              <label for="passwordInput" class="form-label">Password</label>
+              <input type="password" class="form-control" id="passwordInput" placeholder="Enter your password" />
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn" style="background-color: #fff; border-color: #000;" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn" style="background-color: #FFA500;  border-color: #FFA500; color:#fff;" id="updateProfileBtn">Update Profile</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Fetch user data from the API
+    fetchUserData();
+
+    // Update profile form submission
+    const updateProfileForm = document.getElementById('updateProfileForm');
+    const updateProfileBtn = document.getElementById('updateProfileBtn');
+    const avatarInput = document.getElementById('avatarInput');
+
+    updateProfileBtn.addEventListener('click', () => {
+      const name = document.getElementById('nameInput').value;
+      const email = document.getElementById('emailInput').value;
+      const password = document.getElementById('passwordInput').value;
+
+      showLoadingIndicator();
+
+      // Send a request to update the user profile
+      fetch('/user/profile', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name, email, password }),
+        credentials: 'include',
+      })
+        .then((response) => response.json())
+        .then((updatedUser) => {
+          // Close the modal
+          const modal = bootstrap.Modal.getInstance(document.getElementById('updateProfileModal'));
+          modal.hide();
+
+          // Show a success message or perform any other necessary actions
+          alert('Profile updated successfully!');
+
+          // Refresh the page to load updated user data
+          window.location.reload();
+        })
+        .catch((error) => {
+          console.error('Error:', error);
+          // Show an error message or perform any necessary error handling
+          alert('An error occurred while updating the profile.');
+        })
+        .finally(() => {
+          hideLoadingIndicator();
+        });
+    });
+
+    // Upload profile picture
+    avatarInput.addEventListener('change', async () => {
+
+      // Read the selected image file as Base64
+      const imageFile = document.getElementById('avatarInput').files[0];
+      const base64Image = await convertImageToBase64(imageFile);
+      const data = {
+        profilePic: base64Image
+      }
+
+      showLoadingIndicator();
+
+      fetch('/user/profile', {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data),
+        credentials: 'include',
+      })
+        .then((response) => response.json())
+        .then((updatedUser) => {
+          // Update the avatar image
+          document.getElementById('avatarImg').src = updatedUser?.profilePic || 'https://via.placeholder.com/150';
+
+          // Show a success message or perform any other necessary actions
+          alert('Profile picture updated successfully!');
+        })
+        .catch((error) => {
+          console.error('Error:', error);
+          // Show an error message or perform any necessary error handling
+          alert('An error occurred while updating the profile picture.');
+        })
+        .finally(() => {
+          hideLoadingIndicator();
+        });
+    });
+
+    function fetchUserData() {
+      showLoadingIndicator();
+      fetchOrderCounts();
+
+      fetch('/user/profile', {
+        credentials: 'include',
+      })
+        .then((response) => response.json())
+        .then((user) => {
+          // Update the UI with user data
+          document.getElementById('avatarImg').src = user.user.profilePic || 'https://via.placeholder.com/150';
+          document.getElementById('userName').textContent = user.user.name || '';
+          document.getElementById('userEmail').textContent = user.user.email || '';
+          document.getElementById('nameInput').value = user.user.name || '';
+          document.getElementById('emailInput').value = user.user.email || '';
+
+          const pendingOrders = user.orders ? user.orders.filter((order) => order.status === 'pending').length : "-";
+          document.getElementById('pendingOrders').textContent = pendingOrders;
+
+          const deliveredOrders = user.orders ? user.orders.filter((order) => order.status === 'delivered').length : "-";
+          document.getElementById('deliveredOrders').textContent = deliveredOrders;
+
+          const canceledOrders = user.orders ? user.orders.filter((order) => order.status === 'canceled').length : "-";
+          document.getElementById('canceledOrders').textContent = canceledOrders;
+        })
+        .catch((error) => {
+          console.error('Error:', error);
+        })
+        .finally(() => {
+          hideLoadingIndicator();
+        });
+    }
+
+    function fetchOrderCounts() {
+      fetch('/api/orders/count', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          return response.json();
+        })
+        .then(data => {
+          document.getElementById('pendingOrders').textContent = data.pending;
+          document.getElementById('deliveredOrders').textContent = data.delivered;
+          document.getElementById('canceledOrders').textContent = data.cancelled;
+        })
+        .catch(error => {
+          console.error('There was a problem fetching order counts:', error);
+        });
+    }
+
+    function showLoadingIndicator() {
+      document.getElementById('loadingIndicator').style.display = 'block';
+    }
+
+    function hideLoadingIndicator() {
+      document.getElementById('loadingIndicator').style.display = 'none';
+    }
+
+    function convertImageToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.drawImage(img, 0, 0);
+
+            const mimeType = file.type || 'image/jpeg';
+            const base64Data = canvas.toDataURL(mimeType);
+            resolve(base64Data);
+          };
+          img.onerror = reject;
+          img.src = event.target.result;
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+  </script>
+</body>
+
+</html>

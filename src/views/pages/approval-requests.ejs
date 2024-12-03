@@ -1,0 +1,90 @@
+
+<style>
+  .status-badge {
+    font-weight: bold;
+    padding: 5px 10px;
+  }
+  .active {
+    background-color: #28a745;
+    color: #fff;
+  }
+  .inactive {
+    background-color: #dc3545;
+    color: #fff;
+  }
+</style>
+
+
+<div class="container">
+  <h1>Vendors List</h1>
+  <table class="table mt-3">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="vendorList">
+    </tbody>
+  </table>
+</div>
+
+<script>
+  function fetchVendors() {
+    fetch('http://localhost:5000/user/get-vendors')
+      .then(response => response.json())
+      .then(displayVendors)
+      .catch(handleError);
+  }
+
+  function displayVendors(vendors) {
+    const vendorList = document.getElementById('vendorList');
+    if (vendors.length === 0) {
+      vendorList.innerHTML = '<tr><td colspan="4">No vendor found</td></tr>';
+      return;
+    }
+    vendors.forEach(vendor => {
+      const statusBadge = vendor.accountStatus === 'ACTIVE' ? 'active' : 'inactive';
+      const row = `
+          <tr>
+            <td>${vendor.name}</td>
+            <td>${vendor.email}</td>
+            <td>
+              <span class="status-badge ${statusBadge}">
+                ${vendor.accountStatus === 'ACTIVE' ? 'Active' : 'Inactive'}
+              </span>
+            </td>
+            <td>
+              <button class="btn" style="background-color: #FFA500;  border-color: #FFA500; color:#fff ;" onclick="updateVendorStatus('${vendor._id}', '${vendor.accountStatus}')">
+                ${vendor.accountStatus === 'ACTIVE' ? 'Block' : 'Approve'}
+              </button>
+            </td>
+          </tr>
+        `;
+      vendorList.insertAdjacentHTML('beforeend', row);
+    });
+  }
+
+  function updateVendorStatus(vendorId, status) {
+    const newStatus = status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
+    fetch(`http://localhost:5000/user/update-vendors-status/${vendorId}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ accountStatus: newStatus })
+    })
+      .then(response => response.json())
+      .then(data => {
+        location.reload(); // Refresh the page after status update
+      })
+      .catch(handleError);
+  }
+
+  function handleError(error) {
+    console.error('Error:', error);
+  }
+  fetchVendors();
+</script>

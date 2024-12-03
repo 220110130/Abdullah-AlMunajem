@@ -1,45 +1,78 @@
 <nav class="navbar navbar-expand-lg navbar-dark bg-light">
     <div class="container">
-        <% if (isLoggedIn && role==='vendor') { %>
+      <% if (!isLoggedIn) { %>
+        <a class="navbar-brand text-dark" href="/" style="opacity: 0.7;">ShoeHub</a>
+        <% } else if (isLoggedIn && role==='customer' || role==='' ) { %>
+          <a class="navbar-brand text-dark" href="/" style="opacity: 0.7;">ShoeHub</a>
+          <% } else if (isLoggedIn && role==='vendor' ) { %>
             <a class="navbar-brand text-dark" href="/vendor-dashboard" style="opacity: 0.7;">ShoeHub</a>
-        <% } else { %>
-            <a class="navbar-brand text-dark" href="/" style="opacity: 0.7;">ShoeHub</a>
-        <% } %>
-
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto">
-                <% if (!isLoggedIn) { %>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="/">Products</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="/login">Signin</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-dark" href="/signup">Signup</a>
-                </li>
-                <% } else if (isLoggedIn && role==='customer' || role==='' ) { %>
-                    <li class="nav-item">
+            <% } else if (isLoggedIn && role==='admin' ) { %>
+              <a class="navbar-brand text-dark" href="/admin-dashboard" style="opacity: 0.7;">ShoeHub</a>
+              <%}%>
+  
+                <div class="collapse navbar-collapse" id="navbarNav">
+                  <ul class="navbar-nav ms-auto">
+  
+                    <% if (!isLoggedIn) { %>
+                      <li class="nav-item">
                         <a class="nav-link text-dark" href="/">Products</a>
                       </li>
                       <li class="nav-item">
-                        <a class="nav-link text-dark" href="/my-cart">Cart</a>
+                        <a class="nav-link text-dark" href="/login">Login</a>
                       </li>
                       <li class="nav-item">
-                        <a class="nav-link text-dark" href="/logout">Logout</a>
+                        <a class="nav-link text-dark" href="/signup">Sign Up</a>
                       </li>
-                <% } else if (isLoggedIn && role==='vendor' ) { %>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" href="/vendor-dashboard">Dashboard</a>
-                      </li>
-                      <li class="nav-item">
-                        <a class="nav-link text-dark" href="/add-product">Add Product</a>
-                      </li>
-                      <li class="nav-item">
-                        <a class="nav-link text-dark" href="/logout">Logout</a>
-                      </li>
-                <% } %>
-            </ul>
-        </div>
+                      <% } else if (isLoggedIn && role==='customer' || role==='' ) { %>
+                        <li class="nav-item">
+                          <a class="nav-link text-dark" href="/">Products</a>
+                        </li>
+                        <li class="nav-item">
+                          <a class="nav-link text-dark" href="/my-cart">Cart</a>
+                        </li>
+                        <li class="nav-item">
+                          <a class="nav-link text-dark" href="/profile">Profile</a>
+                        </li>
+                        <li class="nav-item">
+                          <a class="nav-link text-dark" href="/view-orders">My Orders</a>
+                        </li>
+                        <li class="nav-item">
+                          <a class="nav-link text-dark" href="/logout">Logout</a>
+                        </li>
+                        <% } else if (isLoggedIn && role==='vendor' ) { %>
+                          <li class="nav-item">
+                            <a class="nav-link text-dark" href="/vendor-dashboard">Dashboard</a>
+                          </li>
+                          <li class="nav-item">
+                            <a class="nav-link text-dark" href="/add-product">Add Product</a>
+                          </li>
+                          <li class="nav-item">
+                            <a class="nav-link text-dark" href="/profile">Profile</a>
+                          </li>
+                          <li class="nav-item">
+                            <a class="nav-link text-dark" href="/view-orders">Customer Orders</a>
+                          </li>
+                          <li class="nav-item">
+                            <a class="nav-link text-dark" href="/logout">Logout</a>
+                          </li>
+                          <% } else if (isLoggedIn && role==='admin' ) { %>
+                            <li>
+                              <a class="nav-link text-dark" href="/admin-dashboard">Dashboard</a>
+                            </li>
+                            <li class="nav-item">
+                              <a class="nav-link text-dark" href="/system-products">System Products</a>
+                            </li>
+                            <li class="nav-item">
+                              <a class="nav-link text-dark" href="/system-users">System Users</a>
+                            </li>
+                            <li class="nav-item">
+                              <a class="nav-link text-dark" href="/view-orders">System Orders</a>
+                            </li>
+                            <li class="nav-item">
+                              <a class="nav-link text-dark" href="/logout">Logout</a>
+                            </li>
+                            <%}%>
+                  </ul>
+                </div>
     </div>
-</nav>
+  </nav>

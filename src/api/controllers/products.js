@@ -2,9 +2,17 @@ const Product = require('../models/product');
 
 exports.getAllProducts = async (req, res) => {
   try {
-    const products = await Product.find().exec();
-
-    res.status(200).json(products);
+    const products = await Product.find()
+      .populate({
+        path: 'vendor',
+        select: 'name accountStatus',
+        match: { accountStatus: 'ACTIVE' } // Filter vendors by accountStatus
+      })
+      .exec();
+      
+    const filteredProducts = products.filter(product => product.vendor);
+    
+    res.status(200).json(filteredProducts);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Server error' });

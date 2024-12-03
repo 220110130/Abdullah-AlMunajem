@@ -6,11 +6,13 @@ require('dotenv').config();
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const morgan = require(`morgan`);
+const { setAuthStatus } = require('./src/api/middleware/auth');
 
 const userRoutes = require('./src/api/routers/user');
 const productRoutes = require('./src/api/routers/products');
 const pageRoutes = require('./src/api/routers/pages');
 const cartRoutes = require('./src/api/routers/cart')
+const orderRoutes = require('./src/api/routers/order')
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -36,12 +38,8 @@ app.use('/', pageRoutes);
 app.use('/api', productRoutes);
 app.use('/user', userRoutes);
 app.use('/api/cart', cartRoutes)
+app.use('/api', orderRoutes);
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
-
-app.get('/a', (req, res) => {
-    res.send('Hello World!');
-  });
-  

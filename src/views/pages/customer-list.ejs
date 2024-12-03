@@ -1,0 +1,90 @@
+
+<style>
+  .status-badge {
+    font-weight: bold;
+    padding: 5px 10px;
+  }
+  .active {
+    background-color: #28a745;
+    color: #fff;
+  }
+  .inactive {
+    background-color: #dc3545;
+    color: #fff;
+  }
+</style>
+
+
+<div class="container">
+  <h1>Customers List</h1>
+  <table class="table mt-3">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="customerList">
+    </tbody>
+  </table>
+</div>
+
+<script>
+  function fetchCustomers() {
+    fetch('http://localhost:5000/user/get-customers')
+      .then(response => response.json())
+      .then(displayCustomers)
+      .catch(handleError);
+  }
+
+  function displayCustomers(customers) {
+    const customerList = document.getElementById('customerList');
+    if (customers.length === 0) {
+      customerList.innerHTML = '<tr><td colspan="4">No customer found</td></tr>';
+      return;
+    }
+    customers.forEach(customer => {
+      const statusBadge = customer.accountStatus === 'ACTIVE' ? 'active' : 'inactive';
+      const row = `
+          <tr>
+            <td>${customer.name}</td>
+            <td>${customer.email}</td>
+            <td>
+              <span class="status-badge ${statusBadge}">
+                ${customer.accountStatus === 'ACTIVE' ? 'Active' : 'Inactive'}
+              </span>
+            </td>
+            <td>
+              <button class="btn" style="background-color: #FFA500;  border-color: #FFA500; color:#fff ;" onclick="updateCustomerStatus('${customer._id}', '${customer.accountStatus}')">
+                ${customer.accountStatus === 'ACTIVE' ? 'Block' : 'Approve'}
+              </button>
+            </td>
+          </tr>
+        `;
+      customerList.insertAdjacentHTML('beforeend', row);
+    });
+  }
+
+  function updateCustomerStatus(customerId, status) {
+    const newStatus = status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
+    fetch(`http://localhost:5000/user/update-customers-status/${customerId}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ accountStatus: newStatus })
+    })
+      .then(response => response.json())
+      .then(data => {
+        location.reload(); // Refresh the page after status update
+      })
+      .catch(handleError);
+  }
+
+  function handleError(error) {
+    console.error('Error:', error);
+  }
+  fetchCustomers();
+</script>

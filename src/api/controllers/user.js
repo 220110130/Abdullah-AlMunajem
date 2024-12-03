@@ -30,7 +30,9 @@ exports.signup = async (req, res) => {
 
 
     let accountStatus = 'ACTIVE';
-
+    if (role === 'vendor') {
+      accountStatus = 'INACTIVE'
+    }
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
@@ -74,6 +76,10 @@ exports.login = async (req, res) => {
       return res.status(400).json({ error: 'Invalid email or password' });
     }
 
+    if (user.accountStatus === 'INACTIVE') {
+      return res.status(400).json({ error: 'account is not activated' });
+    }
+
     const isPasswordValid = await bcrypt.compare(password, user.password);
 
     if (!isPasswordValid) {
@@ -92,5 +98,138 @@ exports.login = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Server error' });
+  }
+};
+
+exports.profile = async (req, res) => {
+
+  try {
+
+    res.status(200).json({ user: req.user });
+
+  } catch (err) {
+
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+
+  }
+
+}
+
+exports.updateProfile = async (req, res) => {
+  try {
+
+    const { name, email, password, profilePic } = req.body;
+
+    const user = await User.findById(req.user._id);
+
+    user.name = name || user.name;
+    user.email = email || user.email;
+    user.profilePic = profilePic || user.profilePic;
+
+    if (password) {
+      const saltRounds = 10;
+      const hashedPassword = await bcrypt.hash(password, saltRounds);
+      user.password = await hashedPassword(password, saltRounds);
+    }
+
+    const updatedUser = await user.save();
+
+    res.json(updatedUser);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+}
+
+exports.countUsersByRole = async (req, res) => {
+  try {
+    // Count customers
+    const customerCount = await User.countDocuments({ role: 'customer' });
+
+    // Count vendors
+    const vendorCount = await User.countDocuments({ role: 'vendor' });
+
+    res.status(200).json({ success: true, customerCount, vendorCount });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+exports.getInactiveVendors = async (req, res) => {
+  try {
+    const inactiveVendors = await User.find({ role: 'vendor', accountStatus: { $ne: 'ACTIVE' } }, { name: 1, email: 1 });
+
+    res.status(200).json({ success: true, inactiveVendors });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+exports.updateAccountStatus = async (req, res) => {
+  try {
+    const { userId } = req.params;
+
+    // Find the user by userId and update the account status to "ACTIVE"
+    const updatedUser = await User.findByIdAndUpdate(userId, { accountStatus: 'ACTIVE' }, { new: true });
+
+    if (!updatedUser) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    res.status(200).json({ success: true, updatedUser });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+exports.getAllVendors = async (req, res) => {
+  try {
+    const vendors = await User.find({ role: 'vendor' });
+    res.json(vendors);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+exports.getAllCustomers = async (req, res) => {
+  try {
+    const vendors = await User.find({ role: 'customer' });
+    res.json(vendors);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// Update vendor status
+exports.updateVendorStatus = async (req, res) => {
+
+  try {
+    const { accountStatus } = req.body;
+    const vendor = await User.findOneAndUpdate({ _id: req.params.vendorId }, { accountStatus });
+    if (!vendor) {
+      return res.status(404).json({ message: 'Vendor not found' });
+    }
+    res.json(vendor);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// Update customer status
+exports.updateCustomerStatus = async (req, res) => {
+
+  try {
+    const { accountStatus } = req.body;
+    const customer = await User.findOneAndUpdate({ _id: req.params.customerId }, { accountStatus });
+    if (!customer) {
+      return res.status(404).json({ message: 'customer not found' });
+    }
+    res.json(customer);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 };
